@@ -4,6 +4,7 @@ import { BrowserRouter as Router } from 'react-router-dom';
 import { ThemeProvider } from '@mui/material/styles';
 import { AlertProvider } from './components/AlertContext';
 import Content from './Content';
+import { WebSocketProvider } from './components/WebSocketContext';
 
 // Create a context
 export const BackendContext = createContext();
@@ -23,10 +24,12 @@ function App() {
   return (
     <ThemeProvider theme={theme}>
       <BackendContext.Provider value={{ backendUrl, setBackendUrl, backendStatus, setBackendStatus }}>
-        <AlertProvider>
+      <AlertProvider>
+        <WebSocketProvider>
             <Router>
               <Content />
             </Router>
+        </WebSocketProvider>
         </AlertProvider>
       </BackendContext.Provider>
     </ThemeProvider>

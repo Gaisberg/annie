@@ -9,10 +9,12 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { useNavigate } from 'react-router-dom';
 import ScrapeResultsModal from '../components/ScrapeResults';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import { useWebSocket } from '../components/WebSocketContext';
 
 const LibraryPage = () => {
   const { imdb_id } = useParams();
   const { backendUrl } = useContext(BackendContext);
+  const { items } = useWebSocket();
   const [item, setItem] = useState(null);
   const [resetTrigger, setResetTrigger] = useState(false);
   const { addAlert } = useAlert();
@@ -33,6 +35,15 @@ const LibraryPage = () => {
         addAlertRef.current('Failed to fetch item information', 'error'); // Use the ref to access addAlert
       });
   }, [imdb_id, backendUrl, resetTrigger]); // Remove addAlert from dependency array
+
+  useEffect(() => {
+    if (items.length > 0 && item) {
+      const updatedItem = items.find(i => i.id === item.id);
+      if (updatedItem) {
+        setItem(updatedItem);
+      }
+    }
+  }, [items, item]);
 
   if (!item) return null;
 
@@ -111,7 +122,7 @@ const LibraryPage = () => {
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-        <IconButton variant="outlined" onClick={() => navigate(-1)}><ArrowBackIcon/></IconButton>
+        <IconButton variant="outlined" onClick={() => navigate(-1)}><ArrowBackIcon /></IconButton>
       </div>
       <Box
         display="flex"
@@ -149,7 +160,7 @@ const LibraryPage = () => {
                 {item.seasons.map((season, seasonIndex) => (
                   <Accordion key={seasonIndex}>
                     <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                    <Grid container spacing={2} alignItems="center">
+                      <Grid container spacing={2} alignItems="center">
                         <Grid item xs={4}>
                           <Typography>{season.title}</Typography>
                         </Grid>
@@ -162,46 +173,30 @@ const LibraryPage = () => {
                       </Grid>
                     </AccordionSummary>
                     <AccordionDetails>
-                      <TableContainer component={Paper}>
-                      <Table>
-                <TableHead>
-                  <TableRow>
-                    <TableCell>
-                      <Grid container spacing={2} alignItems="center">
-                        <Grid item xs={4}>
-                          <Typography>Episode</Typography>
-                        </Grid>
-                        <Grid item xs={4}>
-                          <Typography>State</Typography>
-                        </Grid>
-                        <Grid item xs={4}>
-                          <Typography></Typography>
-                        </Grid>
-                      </Grid>
-                    </TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {season.episodes.map((episode, episodeIndex) => (
-                    <TableRow key={`${seasonIndex}-${episodeIndex}`}>
-                      <TableCell>
-                        <Grid container spacing={2} alignItems="center">
-                          <Grid item xs={4}>
-                            <Typography>{episode.number}</Typography>
-                          </Grid>
-                          <Grid item xs={4}>
-                            <Typography>{episode.state}</Typography>
-                          </Grid>
-                          <Grid item xs={4}>
-                            <ButtonRow item={episode} />
-                          </Grid>
-                        </Grid>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-                      </TableContainer>
+                      {season.episodes.map((episode, episodeIndex) => (
+                        <Accordion key={episodeIndex}>
+                          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                            <Grid container spacing={2} alignItems="center">
+                              <Grid item xs={4}>
+                                <Typography>{episode.number}</Typography>
+                                <Typography color="text.secondary">{episode.title}</Typography>
+                              </Grid>
+                              <Grid item xs={4}>
+                                <Typography color="text.secondary">{episode.state}</Typography>
+                              </Grid>
+                              <Grid item xs={4}>
+                                <ButtonRow item={episode} />
+                              </Grid>
+                            </Grid>
+                          </AccordionSummary>
+                          <AccordionDetails>
+                            <Typography>ID: {episode.id}</Typography>
+                            <Typography>File: {episode.file}</Typography>
+                            <Typography>Requested At: {episode.requested_at}</Typography>
+
+                          </AccordionDetails>
+                        </Accordion>
+                      ))}
                     </AccordionDetails>
                   </Accordion>
                 ))}
@@ -210,8 +205,8 @@ const LibraryPage = () => {
           </Grid>
         </Grid>
       </Box>
-      <ScrapeResultsModal 
-        isOpen={isModalOpen} 
+      <ScrapeResultsModal
+        isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         item={currentItem}
         results={scrapeResults}

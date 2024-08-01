@@ -1,5 +1,5 @@
 import React from 'react';
-import useWebSocket from '../components/useWebSocket';
+import { useWebSocket } from '../components/WebSocketContext';
 
 const DebugPage = () => {
   const { logMessages } = useWebSocket();
