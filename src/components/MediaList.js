@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext} from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
 import { TextField, List, ListItemText } from '@mui/material';
 import { BackendContext } from '../App';
@@ -17,7 +17,6 @@ const MediaList = ({ type }) => {
     if (!backendStatus) return;
     axios.get(`${backendUrl}/items?type=${type}`)
       .then(response => {
-        console.log(response.data)
         setItems(response.data.items);
       })
       .catch(error => {
@@ -49,6 +48,11 @@ const MediaList = ({ type }) => {
         value={search}
         onChange={(e) => setSearch(e.target.value)}
         fullWidth
+        sx={{
+          marginLeft: '-8px',
+          marginRight: '-8px',
+          width: 'calc(100% + 16px)',
+        }}
       />
       <List>
         {filteredItems.map(item => (

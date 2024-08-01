@@ -20,6 +20,8 @@ function SettingsPage() {
     }
   }, [backendUrl, addAlert, backendStatus]);
 
+  
+
   const saveSettings = () => {
     try {
       const parsedSettings = JSON.parse(settings);
