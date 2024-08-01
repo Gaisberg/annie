@@ -31,11 +31,13 @@ const MediaList = ({ type }) => {
 
   const filteredItems = search
     ? items.filter(item => {
+      console.log(item)
         const searchTerms = search.toLowerCase().split(',').map(term => term.trim());
         return searchTerms.every(term =>
           item.title.toLowerCase().includes(term) ||
           item.id.toLowerCase().includes(term) ||
-          item.state.toLowerCase().includes(term)
+          item.state.toLowerCase().includes(term) ||
+          item.imdb_id.toLowerCase().includes(term)
         );
       })
     : items;
