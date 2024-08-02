@@ -43,6 +43,8 @@ const LibraryPage = () => {
         setItem(updatedItem);
       }
     }
+    console.log(item)
+    console.log(items)
   }, [items, item]);
 
   if (!item) return null;
@@ -107,6 +109,7 @@ const LibraryPage = () => {
         console.error(error);
         addAlert('Failed to initiate download', 'error');
       })
+      
   };
 
   const ButtonRow = ({ item }) => {
@@ -155,33 +158,38 @@ const LibraryPage = () => {
             </Box>
           </Grid>
           <Grid item xs={12}>
-            <TableContainer component={Paper}>
-              <Table>
-                <TableHead>
-                  <TableRow>
-                    <TableCell>Stream ID</TableCell>
-                    <TableCell>Stream Title</TableCell>
-                    <TableCell>Stream Hash</TableCell>
-                    <TableCell>Stream Blacklisted</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {item.streams.length > 0 && item.streams.map((stream, streamIndex) => (
+            <Accordion key="streams">
+              <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                Streams
+              </AccordionSummary>
+              <TableContainer component={Paper}>
+                <Table>
+                  <TableHead>
+                    <TableRow>
+                      <TableCell>Stream ID</TableCell>
+                      <TableCell>Stream Title</TableCell>
+                      <TableCell>Stream Hash</TableCell>
+                      <TableCell>Stream Blacklisted</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {item.streams && item.streams.length > 0 && item.streams.map((stream, streamIndex) => (
                       <TableRow
                         key={streamIndex}
-                        // style={{
-                        //   fontWeight: stream._id === item.active_stream._id ? 'bold' : 'normal'
-                        // }}
+                      style={ item.active_stream && {
+                        fontWeight: stream._id === item.active_stream.id ? 'bold' : 'normal'
+                      }}
                       >
-                      <TableCell>{stream._id}</TableCell>
-                      <TableCell>{stream.raw_title}</TableCell>
-                      <TableCell>{stream.infohash}</TableCell>
-                      <TableCell>{stream.blacklisted ? 'Yes' : 'No'}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
+                        <TableCell>{stream._id}</TableCell>
+                        <TableCell>{stream.raw_title}</TableCell>
+                        <TableCell>{stream.infohash}</TableCell>
+                        <TableCell>{stream.blacklisted ? 'Yes' : 'No'}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            </Accordion>
           </Grid>
           <Grid item xs={12}>
             {item.type === 'Show' && (

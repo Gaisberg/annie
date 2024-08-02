@@ -12,9 +12,12 @@ export const WebSocketProvider = ({ children }) => {
     const [logMessages, setLogMessages] = useState([]);
     const [items, setItems] = useState([]);
     const webSocketRef = useRef(null);
+    const retryIntervalRef = useRef(null);
+    const [alertShown, setAlertShown] = useState(false);
 
     const handleWebSocketMessage = (event) => {
         const message = JSON.parse(event.data);
+        console.log(message)
         if (!message) return;
         if (message.type === 'health') {
             setBackendStatus(message.status === 'running');
@@ -38,8 +41,6 @@ export const WebSocketProvider = ({ children }) => {
     };
 
     useEffect(() => {
-        let retryInterval;
-
         const establishWebSocket = () => {
             if (isValidUrl(backendUrl)) {
                 const { closeWebSocket, webSocket } = createWebSocket(
@@ -47,7 +48,9 @@ export const WebSocketProvider = ({ children }) => {
                     () => {
                         addAlert('WebSocket connection established');
                         setBackendStatus(true);
-                        clearInterval(retryInterval); // Clear retry interval on successful connection
+                        clearInterval(retryIntervalRef.current); // Clear retry interval on successful connection
+                        retryIntervalRef.current = null;
+                        setAlertShown(false); // Reset alert shown state on successful connection
                     },
                     handleWebSocketMessage,
                     (message) => {
@@ -57,10 +60,10 @@ export const WebSocketProvider = ({ children }) => {
                         setBackendStatus(false);
                     },
                     () => {
-                        setBackendStatus(false);
-                    },
-                    () => {
-                        addAlert('WebSocket connection closed');
+                        if (!alertShown) {
+                            addAlert('Lost websocket connection, retrying...', "error");
+                            setAlertShown(true); // Set alert shown state to true
+                        }
                         setBackendStatus(false);
                         retryConnection(); // Retry connection on close
                     }
@@ -72,18 +75,20 @@ export const WebSocketProvider = ({ children }) => {
         };
 
         const retryConnection = () => {
-            retryInterval = setInterval(() => {
-                if (!isWebSocketConnected()) {
-                    establishWebSocket();
-                }
-            }, 2000);
+            if (!retryIntervalRef.current) {
+                retryIntervalRef.current = setInterval(() => {
+                    if (!isWebSocketConnected()) {
+                        establishWebSocket();
+                    }
+                }, 2000);
+            }
         };
 
         const closeWebSocket = establishWebSocket();
         retryConnection();
 
         return () => {
-            clearInterval(retryInterval);
+            clearInterval(retryIntervalRef.current);
             if (closeWebSocket) closeWebSocket();
         };
     }, [backendUrl]);
