@@ -9,17 +9,17 @@ import DebugPage from './pages/Debug';
 const Content = () => {
 
   return (
-    <div>
-    <AppBar position="static">
-    </AppBar>
-      <Routes>
-        <Route path="/" element={<MediaList type="movie" />} />
-        <Route path="/movies" element={<MediaList type="movie" />} />
-        <Route path="/shows" element={<MediaList type="show" />} />
-        <Route path="/library/:imdb_id" element={<LibraryPage />} />
-        <Route path="/debug" element={<DebugPage />} />
-        <Route path="/settings" element={<SettingsPage />} />
-      </Routes>
+    <div className="parent-container">
+      <AppBar position="static">
+      </AppBar>
+        <Routes>
+          <Route path="/" element={<MediaList type="movie" />} />
+          <Route path="/movies" element={<MediaList type="movie" />} />
+          <Route path="/shows" element={<MediaList type="show" />} />
+          <Route path="/library/:imdb_id" element={<LibraryPage />} />
+          <Route path="/debug" element={<DebugPage />} />
+          <Route path="/settings" element={<SettingsPage />} />
+        </Routes>
     </div>
 
   );

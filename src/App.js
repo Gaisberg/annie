@@ -1,7 +1,8 @@
+import './App.css';
+import './styles/customScrollbar.css';
 import React, { useState, useEffect, createContext } from 'react';
-import theme from './Theme';
+import { ThemeContextProvider } from './components/ThemeContext';
 import { BrowserRouter as Router } from 'react-router-dom';
-import { ThemeProvider } from '@mui/material/styles';
 import { AlertProvider } from './components/AlertContext';
 import Content from './Content';
 import { WebSocketProvider } from './components/WebSocketContext';
@@ -20,19 +21,23 @@ function App() {
   useEffect(() => {
     localStorage.setItem('backendUrl', backendUrl);
   }, [backendUrl]);
-  
+
   return (
-    <ThemeProvider theme={theme}>
+    <ThemeContextProvider>
       <BackendContext.Provider value={{ backendUrl, setBackendUrl, backendStatus, setBackendStatus }}>
-      <AlertProvider>
-        <WebSocketProvider>
+        <AlertProvider>
+          <WebSocketProvider>
             <Router>
-              <Content />
+              <div class="parent-container">
+                <div className="custom-scrollbar" style={{ overflow: 'hidden' }}>
+                  <Content />
+                </div>
+              </div>
             </Router>
-        </WebSocketProvider>
+          </WebSocketProvider>
         </AlertProvider>
       </BackendContext.Provider>
-    </ThemeProvider>
+    </ThemeContextProvider>
   );
 }
 

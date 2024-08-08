@@ -16,7 +16,10 @@ import CheckBoxRoundedIcon from '@mui/icons-material/CheckBoxRounded';
 import MenuItem from '@mui/material/MenuItem';
 import ApiRoundedIcon from '@mui/icons-material/ApiRounded';
 import { BackendContext } from '../App'; // Ensure this path is correct
+import { ThemeContext } from './ThemeContext'; // Import the ThemeContext
 import { isValidUrl } from '../utils/isValidUrl';
+import Brightness4Icon from '@mui/icons-material/Brightness4';
+import Brightness7Icon from '@mui/icons-material/Brightness7';
 import '../styles.css'; // Import the styles.css file
 
 
@@ -24,6 +27,7 @@ const pages = ['Movies', 'Shows', 'Settings'];
 
 function ResponsiveAppBar() {
   const { backendUrl, setBackendUrl, backendStatus } = useContext(BackendContext);
+  const { isDarkTheme, toggleTheme } = useContext(ThemeContext);
   const [urlInput, setUrlInput] = useState(backendUrl);
   const [anchorElNav, setAnchorElNav] = useState(null);
 
@@ -154,6 +158,9 @@ function ResponsiveAppBar() {
                 }}
             />
           </Box>
+          <IconButton sx={{ ml: 1 }} onClick={toggleTheme} color="inherit">
+            {isDarkTheme ? <Brightness7Icon /> : <Brightness4Icon />}
+          </IconButton>
         </Toolbar>
       </Container>
     </AppBar>

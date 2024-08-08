@@ -15,6 +15,7 @@ const LibraryPage = () => {
   const { imdb_id } = useParams();
   const { backendUrl } = useContext(BackendContext);
   const { items } = useWebSocket();
+  const prevItemsRef = useRef(items);
   const [item, setItem] = useState(null);
   const [resetTrigger, setResetTrigger] = useState(false);
   const { addAlert } = useAlert();
@@ -34,7 +35,7 @@ const LibraryPage = () => {
         console.error('Failed to fetch extended item information', error);
         addAlertRef.current('Failed to fetch item information', 'error'); // Use the ref to access addAlert
       });
-  }, [imdb_id, backendUrl, resetTrigger]); // Remove addAlert from dependency array
+  }, [prevItemsRef, imdb_id, backendUrl, resetTrigger]); // Remove addAlert from dependency array
 
   useEffect(() => {
     if (items.length > 0 && item) {
@@ -43,8 +44,7 @@ const LibraryPage = () => {
         setItem(updatedItem);
       }
     }
-    console.log(item)
-    console.log(items)
+    prevItemsRef.current = items; // Update the ref to the current items
   }, [items, item]);
 
   if (!item) return null;
@@ -123,7 +123,7 @@ const LibraryPage = () => {
   };
 
   return (
-    <div>
+    <div className="custom-scrollbar">
       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
         <IconButton variant="outlined" onClick={() => navigate(-1)}><ArrowBackIcon /></IconButton>
       </div>
@@ -194,7 +194,7 @@ const LibraryPage = () => {
           <Grid item xs={12}>
             {item.type === 'Show' && (
               <div>
-                {item.seasons.map((season, seasonIndex) => (
+                {item.seasons && item.seasons.map((season, seasonIndex) => (
                   <Accordion key={seasonIndex}>
                     <AccordionSummary expandIcon={<ExpandMoreIcon />}>
                       <Grid container spacing={2} alignItems="center">

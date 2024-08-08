@@ -24,13 +24,9 @@ export const WebSocketProvider = ({ children }) => {
         } else if (message.type === 'item_update') {
             let data = JSON.parse(message.item);
             addAlert('Item "' + data.title + '" updated to state "' + data.state + '"');
-            setItems(prevItems => {
-                const newItems = [...prevItems, data];
-                if (newItems.length > 10) {
-                    newItems.shift();
-                }
-                return newItems;
-            });
+            if (items) {
+                setItems(items.map(item => item.id === data.id ? data : item));
+            }
         } else if (message.type === 'log') {
             setLogMessages(prevLogs => [...prevLogs, message.status]);
         }
