@@ -49,7 +49,7 @@ const LibraryPage = () => {
 
   if (!item) return null;
 
-  const imageUrl = `https://images.metahub.space/poster/small/${item.imdb_id}/img`;
+  const backgroundUrl = `https://images.metahub.space/background/large/${item.imdb_id}/img`;
 
   const handleReset = (item) => {
     setLoading(prev => ({ ...prev, reset: true }));
@@ -109,146 +109,170 @@ const LibraryPage = () => {
         console.error(error);
         addAlert('Failed to initiate download', 'error');
       })
-      
+
   };
 
   const ButtonRow = ({ item }) => {
     return (
       <div>
-        <LoadingButton color="error" variant="outlined" loading={loading.reset} onClick={() => handleReset(item)}>Reset</LoadingButton>
-        <LoadingButton variant="outlined" loading={loading.scrape} onClick={() => handleScrape(item)}>Scrape</LoadingButton>
-        <LoadingButton variant="outlined" loading={loading.retry} onClick={() => handleRetry(item)}>Retry</LoadingButton>
+        <Box sx={{ display: 'inline-block', marginRight: 2 }}>
+          <LoadingButton color="error" variant="outlined" loading={loading.reset} onClick={() => handleReset(item)}>Reset</LoadingButton>
+        </Box>
+        <Box sx={{ display: 'inline-block', marginRight: 2 }}>
+          <LoadingButton variant="outlined" loading={loading.retry} onClick={() => handleRetry(item)}>Retry</LoadingButton>
+        </Box>
       </div>
     );
   };
 
   return (
     <div className="custom-scrollbar">
-      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-        <IconButton variant="outlined" onClick={() => navigate(-1)}><ArrowBackIcon /></IconButton>
-      </div>
-      <Box
-        display="flex"
-        flexDirection="column"
-        alignItems="center"
-        minHeight="100vh"
-        minWidth="100vw"
-      >
-        <Grid container spacing={2}>
-          <Grid item xs={6}>
-            <Box display="flex" justifyContent="center" alignItems="center" height="100%">
-              <img src={imageUrl} alt={item.title} style={{ width: '200px', height: 'auto' }} />
-            </Box>
-          </Grid>
-          <Grid item xs={6}>
-            <Box display="flex" flexDirection="column" justifyContent="center" height="100%">
-              <Typography variant="h5" component="div">
-                {item.title}
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                ID: {item.id}
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                File: {item.file}
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Requested At: {item.requested_at}
-              </Typography>
-              <ButtonRow item={item} />
-            </Box>
-          </Grid>
-          <Grid item xs={12}>
-            <Accordion key="streams">
-              <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                Streams
-              </AccordionSummary>
-              <TableContainer component={Paper}>
-                <Table>
-                  <TableHead>
-                    <TableRow>
-                      <TableCell>Stream ID</TableCell>
-                      <TableCell>Stream Title</TableCell>
-                      <TableCell>Stream Hash</TableCell>
-                      <TableCell>Stream Blacklisted</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {item.streams && item.streams.length > 0 && item.streams.map((stream, streamIndex) => (
-                      <TableRow
-                        key={streamIndex}
-                      style={ item.active_stream && {
-                        fontWeight: stream._id === item.active_stream.id ? 'bold' : 'normal'
-                      }}
-                      >
-                        <TableCell>{stream._id}</TableCell>
-                        <TableCell>{stream.raw_title}</TableCell>
-                        <TableCell>{stream.infohash}</TableCell>
-                        <TableCell>{stream.blacklisted ? 'Yes' : 'No'}</TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </TableContainer>
-            </Accordion>
-          </Grid>
-          <Grid item xs={12}>
-            {item.type === 'Show' && (
-              <div>
-                {item.seasons && item.seasons.map((season, seasonIndex) => (
-                  <Accordion key={seasonIndex}>
-                    <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                      <Grid container spacing={2} alignItems="center">
-                        <Grid item xs={4}>
-                          <Typography>{season.title}</Typography>
-                        </Grid>
-                        <Grid item xs={4}>
-                          <Typography color="text.secondary">{season.state}</Typography>
-                        </Grid>
-                        <Grid item xs={4}>
-                          <ButtonRow item={season} />
-                        </Grid>
-                      </Grid>
-                    </AccordionSummary>
-                    <AccordionDetails>
-                      {season.episodes.map((episode, episodeIndex) => (
-                        <Accordion key={episodeIndex}>
-                          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                            <Grid container spacing={2} alignItems="center">
-                              <Grid item xs={4}>
-                                <Typography>{episode.number}</Typography>
-                                <Typography color="text.secondary">{episode.title}</Typography>
-                              </Grid>
-                              <Grid item xs={4}>
-                                <Typography color="text.secondary">{episode.state}</Typography>
-                              </Grid>
-                              <Grid item xs={4}>
-                                <ButtonRow item={episode} />
-                              </Grid>
-                            </Grid>
-                          </AccordionSummary>
-                          <AccordionDetails>
-                            <Typography>ID: {episode.id}</Typography>
-                            <Typography>File: {episode.file}</Typography>
-                            <Typography>Requested At: {episode.requested_at}</Typography>
 
-                          </AccordionDetails>
-                        </Accordion>
+      <Box sx={{ width: '100vw', height: '100vh', overflow: 'auto' }}>
+        {/* Header Section */}
+        
+        <Box
+          sx={{
+            width: '100%',
+            height: '30vh',
+            backgroundImage: `url(${backgroundUrl})`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            display: 'flex',
+            justifyContent: 'flex-start',
+            alignItems: 'center',
+            padding: 2,
+          }}
+        >
+          <Box
+            display="flex"
+            flexDirection="column"
+            justifyContent="center"
+            height="100%"
+            sx={{
+              // backgroundColor: 'rgba(128, 128, 128, 0.5)', // 50% gray overlay
+              backdropFilter: 'blur(10px)', // Blur effect
+              padding: 2,
+              borderRadius: '16px', // Rounded corners
+              position: 'relative',
+              zIndex: 2, // Ensure content is above the overlay
+            }}
+            
+          >
+
+            <Typography variant="h5" component="div">
+              {item.title}
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              ID: {item.id}
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              File: {item.file}
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              Requested At: {item.requested_at}
+            </Typography>
+            <Box sx={{ display: 'flex', gap: 2, marginTop: 2 }}>
+              <LoadingButton color="error" variant="outlined" loading={loading.reset} onClick={() => handleReset(item)}>Reset</LoadingButton>
+              <LoadingButton variant="outlined" loading={loading.retry} onClick={() => handleRetry(item)}>Retry</LoadingButton>
+            </Box>
+          </Box>
+        </Box>
+        <Box sx={{ padding: 2 }}>
+          <Grid container spacing={2}>
+            <Grid item xs={12}>
+              <Accordion key="streams">
+                <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                  Streams
+                </AccordionSummary>
+                <TableContainer component={Paper}>
+                  <Table>
+                    <TableHead>
+                      <TableRow>
+                        <TableCell>Stream ID</TableCell>
+                        <TableCell>Stream Title</TableCell>
+                        <TableCell>Stream Hash</TableCell>
+                        <TableCell>Stream Blacklisted</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {item.streams && item.streams.length > 0 && item.streams.map((stream, streamIndex) => (
+                        <TableRow
+                          key={streamIndex}
+                          style={item.active_stream && {
+                            fontWeight: stream._id === item.active_stream.id ? 'bold' : 'normal'
+                          }}
+                        >
+                          <TableCell>{stream._id}</TableCell>
+                          <TableCell>{stream.raw_title}</TableCell>
+                          <TableCell>{stream.infohash}</TableCell>
+                          <TableCell>{stream.blacklisted ? 'Yes' : 'No'}</TableCell>
+                        </TableRow>
                       ))}
-                    </AccordionDetails>
-                  </Accordion>
-                ))}
-              </div>
-            )}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              </Accordion>
+            </Grid>
+            <Grid item xs={12}>
+              {item.type === 'Show' && (
+                <div>
+                  {item.seasons && item.seasons.map((season, seasonIndex) => (
+                    <Accordion key={seasonIndex}>
+                      <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                        <Grid container spacing={2} alignItems="center">
+                          <Grid item xs={4}>
+                            <Typography>{season.title}</Typography>
+                          </Grid>
+                          <Grid item xs={4}>
+                            <Typography color="text.secondary">{season.state}</Typography>
+                          </Grid>
+                          <Grid item xs={4}>
+                            <ButtonRow item={season} />
+                          </Grid>
+                        </Grid>
+                      </AccordionSummary>
+                      <AccordionDetails>
+                        {season.episodes.map((episode, episodeIndex) => (
+                          <Accordion key={episodeIndex}>
+                            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                              <Grid container spacing={2} alignItems="center">
+                                <Grid item xs={4}>
+                                  <Typography>{episode.number}</Typography>
+                                  <Typography color="text.secondary">{episode.title}</Typography>
+                                </Grid>
+                                <Grid item xs={4}>
+                                  <Typography color="text.secondary">{episode.state}</Typography>
+                                </Grid>
+                                <Grid item xs={4}>
+                                  <ButtonRow item={episode} />
+                                </Grid>
+                              </Grid>
+                            </AccordionSummary>
+                            <AccordionDetails>
+                              <Typography>ID: {episode.id}</Typography>
+                              <Typography>File: {episode.file}</Typography>
+                              <Typography>Requested At: {episode.requested_at}</Typography>
+
+                            </AccordionDetails>
+                          </Accordion>
+                        ))}
+                      </AccordionDetails>
+                    </Accordion>
+                  ))}
+                </div>
+              )}
+            </Grid>
           </Grid>
-        </Grid>
+        </Box>
+        <ScrapeResultsModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          item={currentItem}
+          results={scrapeResults}
+          onDownload={handleDownload}
+        />
       </Box>
-      <ScrapeResultsModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        item={currentItem}
-        results={scrapeResults}
-        onDownload={handleDownload}
-      />
     </div>
   );
 };

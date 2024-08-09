@@ -1,0 +1,59 @@
+/* customScrollbar.css */
+
+/* Custom Scrollbar for a specific container */
+.parent-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 100%;
+}
+/* Custom Scrollbar for a specific container */
+.custom-scrollbar {
+  flex-grow: 1;
+  overflow-y: auto;
+  overflow-x: hidden; /* Prevent horizontal overflow */
+  
+}
+
+/* Hide the default scrollbar */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 2px !important;
+  height: 2px !important;
+}
+
+.custom-scrollbar::-webkit-scrollbar-button {
+  width: 0px;
+  height: 0px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #e1e1e1;
+  border: 0px none #ffffff;
+  border-radius: 50px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #ffffff;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:active {
+  background: #000000;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #666666;
+  border: 0px none #ffffff;
+  border-radius: 50px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track:hover {
+  background: #666666;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track:active {
+  background: #333333;
+}
+
+.custom-scrollbar::-webkit-scrollbar-corner {
+  background: transparent;
+}
