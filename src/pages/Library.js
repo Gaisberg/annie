@@ -10,6 +10,7 @@ import { useNavigate } from 'react-router-dom';
 import ScrapeResultsModal from '../components/ScrapeResults';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { useWebSocket } from '../components/WebSocketContext';
+import {FastAverageColor} from 'fast-average-color';
 
 const LibraryPage = () => {
   const { imdb_id } = useParams();
@@ -25,10 +26,13 @@ const LibraryPage = () => {
   const [loading, setLoading] = useState({ reset: false, scrape: false, retry: false });
   const [currentItem, setCurrentItem] = useState(null);
   const navigate = useNavigate();
+  const [textColor, setTextColor] = useState('#000'); // Default text color
+
 
   useEffect(() => {
     axios.get(`${backendUrl}/items?search=${imdb_id}&extended=true`)
       .then(response => {
+        console.log(response.data.items[0]);
         setItem(response.data.items[0]);
       })
       .catch(error => {
@@ -47,9 +51,25 @@ const LibraryPage = () => {
     prevItemsRef.current = items; // Update the ref to the current items
   }, [items, item]);
 
+  const backgroundUrl = `https://images.metahub.space/background/large/${imdb_id}/img`;
+
+  // useEffect(() => {
+  //   if (backgroundUrl) {
+  //     const fac = new FastAverageColor();
+  //     fac.getColorAsync(backgroundUrl)
+  //       .then(color => {
+  //         const [r, g, b] = color.value;
+  //         const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+  //         const textColor = brightness > 125 ? '#000' : '#fff'; // Choose black or white text based on brightness
+  //         setTextColor(textColor);
+  //       })
+  //       .catch(e => {
+  //       });
+  //   }
+  // }, [backgroundUrl]);
+
   if (!item) return null;
 
-  const backgroundUrl = `https://images.metahub.space/background/large/${item.imdb_id}/img`;
 
   const handleReset = (item) => {
     setLoading(prev => ({ ...prev, reset: true }));
@@ -130,46 +150,53 @@ const LibraryPage = () => {
 
       <Box sx={{ width: '100vw', height: '100vh', overflow: 'auto' }}>
         {/* Header Section */}
-        
         <Box
           sx={{
             width: '100%',
-            height: '30vh',
             backgroundImage: `url(${backgroundUrl})`,
             backgroundSize: 'cover',
             backgroundPosition: 'center',
             display: 'flex',
+            flexDirection: 'column',
             justifyContent: 'flex-start',
-            alignItems: 'center',
+            alignItems: 'flex-start',
             padding: 2,
           }}
         >
+
           <Box
             display="flex"
             flexDirection="column"
             justifyContent="center"
             height="100%"
             sx={{
-              // backgroundColor: 'rgba(128, 128, 128, 0.5)', // 50% gray overlay
+              backgroundColor: 'rgba(128, 128, 128, 0.5)', // 50% gray overlay
               backdropFilter: 'blur(10px)', // Blur effect
               padding: 2,
               borderRadius: '16px', // Rounded corners
               position: 'relative',
               zIndex: 2, // Ensure content is above the overlay
             }}
-            
           >
+          <IconButton
+            onClick={() => navigate(`/${item.type}s`)}
+            sx={{
+              zIndex: 3, // Ensure the button is above other elements
+            }}
+          >
+            <ArrowBackIcon />
+          </IconButton>
 
-            <Typography variant="h5" component="div">
+            <Typography variant="h5" component="div" color={textColor}>
               {item.title}
             </Typography>
-            <Typography variant="body2" color="text.secondary">
+            <Typography variant="body2" color={textColor}>
               ID: {item.id}
             </Typography>
-            <Typography variant="body2" color="text.secondary">
+            <Typography variant="body2" color={textColor}>
               File: {item.file}
             </Typography>
-            <Typography variant="body2" color="text.secondary">
+            <Typography variant="body2" color={textColor}>
               Requested At: {item.requested_at}
             </Typography>
             <Box sx={{ display: 'flex', gap: 2, marginTop: 2 }}>
@@ -199,11 +226,9 @@ const LibraryPage = () => {
                       {item.streams && item.streams.length > 0 && item.streams.map((stream, streamIndex) => (
                         <TableRow
                           key={streamIndex}
-                          style={item.active_stream && {
-                            fontWeight: stream._id === item.active_stream.id ? 'bold' : 'normal'
-                          }}
+                          style={item.active_stream && stream.infohash === item.active_stream.hash ? { backgroundColor: 'gray', fontWeight: "bold" } : {}}
                         >
-                          <TableCell>{stream._id}</TableCell>
+                          <TableCell>{stream._id} </TableCell>
                           <TableCell>{stream.raw_title}</TableCell>
                           <TableCell>{stream.infohash}</TableCell>
                           <TableCell>{stream.blacklisted ? 'Yes' : 'No'}</TableCell>

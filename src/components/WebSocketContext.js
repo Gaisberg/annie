@@ -17,7 +17,6 @@ export const WebSocketProvider = ({ children }) => {
 
     const handleWebSocketMessage = (event) => {
         const message = JSON.parse(event.data);
-        console.log(message)
         if (!message) return;
         if (message.type === 'health') {
             setBackendStatus(message.status === 'running');
@@ -28,7 +27,7 @@ export const WebSocketProvider = ({ children }) => {
                 setItems(items.map(item => item.id === data.id ? data : item));
             }
         } else if (message.type === 'log') {
-            setLogMessages(prevLogs => [...prevLogs, message.status]);
+            setLogMessages(prevLogs => [...prevLogs, message.message]);
         }
     };
 

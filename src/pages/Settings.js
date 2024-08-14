@@ -8,14 +8,13 @@ import axios from 'axios';
 import { useAlert } from '../components/AlertContext';
 
 function SettingsPage() {
-  const { backendUrl, backendStatus } = useContext(BackendContext);
+  const { backendUrl} = useContext(BackendContext);
   const [ loading, setLoading ] = useState(true);
   const [settings, setSettings] = useState({});
   const { addAlert } = useAlert();
 
   useEffect(() => {
     setLoading(true);
-    if (backendStatus) {
       axios.get(`${backendUrl}/settings/get/all`)
         .then(response => {
           setSettings(response.data.data);
@@ -26,8 +25,7 @@ function SettingsPage() {
           addAlert('Failed to fetch settings', 'error');
           setLoading(false);
         });
-    }
-  }, [backendUrl, addAlert, backendStatus,]);
+  }, [backendUrl, addAlert]);
 
   const handleInputChange = (keyPath, value) => {
     setSettings(prevSettings => {

@@ -11,6 +11,7 @@ import { WebSocketProvider } from './components/WebSocketContext';
 export const BackendContext = createContext();
 
 function App() {
+
   const [backendUrl, setBackendUrl] = useState(() => {
     return localStorage.getItem('backendUrl') || '';
   });
@@ -28,7 +29,7 @@ function App() {
         <AlertProvider>
           <WebSocketProvider>
             <Router>
-              <div class="parent-container">
+              <div className="parent-container">
                 <div className="custom-scrollbar" style={{ overflow: 'hidden' }}>
                   <Content />
                 </div>

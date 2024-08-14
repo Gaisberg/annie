@@ -23,7 +23,7 @@ import Brightness7Icon from '@mui/icons-material/Brightness7';
 import '../styles.css'; // Import the styles.css file
 
 
-const pages = ['Movies', 'Shows', 'Settings'];
+const pages = ['Movies', 'Shows', 'Settings', 'Debug'];
 
 function ResponsiveAppBar() {
   const { backendUrl, setBackendUrl, backendStatus } = useContext(BackendContext);

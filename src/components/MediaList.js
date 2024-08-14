@@ -8,7 +8,7 @@ import TraktLogo from '../assets/trakt-icon-red.svg';
 import axios from 'axios';
 
 const MediaList = ({ type }) => {
-  const { backendUrl, backendStatus } = useContext(BackendContext);
+  const { backendUrl } = useContext(BackendContext);
   const [items, setItems] = useState([]);
   const [search, setSearch] = useState('');
   const [traktResults, setTraktResults] = useState([]);
@@ -18,19 +18,28 @@ const MediaList = ({ type }) => {
   const { addAlert } = useAlert();
   const navigate = useNavigate();
   const observer = useRef();
+  const [ filteredItems, setFilteredItems ] = useState([]);
+
+  const fetchItems = useCallback(async (type, page, amount) => {
+    const response = await fetch(`${backendUrl}/items?type=${type}&page=${page}&limit=${amount || 10}`);
+    if (!response.ok) {
+      throw new Error('Network response was not ok');
+    }
+    const data = await response.json();
+    return data.items;
+  }, [backendUrl]);
 
   useEffect(() => {
-    if (!backendStatus) return;
     setLoading(true);
-    axios.get(`${backendUrl}/items?type=${type}&page=${page}&limit=10`)
-      .then(response => {
+    fetchItems(type, page)
+      .then(items => {
         setItems(prevItems => {
-          const newItems = response.data.items.filter(item => 
+          const newItems = items.filter(item => 
             !prevItems.some(prevItem => prevItem.id === item.id)
           );
           return [...prevItems, ...newItems];
         });
-        setHasMore(response.data.items.length > 0);
+        setHasMore(items.length > 0);
         setLoading(false);
       })
       .catch(error => {
@@ -38,7 +47,7 @@ const MediaList = ({ type }) => {
         addAlert(`Failed to fetch ${type}s`, 'error');
         setLoading(false);
       });
-  }, [type, backendUrl, addAlert, backendStatus, page]);
+  }, [type, backendUrl, addAlert, page, fetchItems]);
 
   useEffect(() => {
     setSearch('');
@@ -127,17 +136,48 @@ const MediaList = ({ type }) => {
   }, [loading, hasMore]);
 
 
-  const filteredItems = search
-    ? items.filter(item => {
-      const searchTerms = search.toLowerCase().split(',').map(term => term.trim());
-      return searchTerms.every(term =>
-        item.title.toLowerCase().includes(term) ||
-        item.id.toLowerCase().includes(term) ||
-        item.state.toLowerCase().includes(term) ||
-        item.imdb_id.toLowerCase().includes(term)
-      );
-    })
-    : items;
+  useEffect(() => {
+    const fetchFilteredItems = async () => {
+      let page = 1;
+      let filteredItems = [];
+      let hasMorePages = true;
+  
+      while (hasMorePages) {
+        try {
+          const items = await fetchItems(type, page);
+          if (items.length === 0) {
+            hasMorePages = false;
+            break;
+          }
+  
+          const searchTerms = search.toLowerCase().split(',').map(term => term.trim());
+          const filteredPageItems = items.filter(item =>
+            searchTerms.every(term =>
+              item.title.toLowerCase().includes(term) ||
+              item.id.toLowerCase().includes(term) ||
+              item.state.toLowerCase().includes(term) ||
+              item.imdb_id.toLowerCase().includes(term)
+            )
+          );
+
+          filteredItems = filteredItems.concat(filteredPageItems);
+  
+          if (filteredPageItems.length > 0) {
+            break;
+          }
+
+          page++;
+        } catch (error) {
+          console.error('Error fetching items:', error);
+          hasMorePages = false;
+        }
+      }
+
+      setFilteredItems(filteredItems);
+    };
+
+    fetchFilteredItems();
+  }, [fetchItems, search, type]);
 
   return (
     <>
@@ -159,20 +199,21 @@ const MediaList = ({ type }) => {
       <div className="custom-scrollbar">
       <List>
         {filteredItems.map((item, index) => {
-          if (items.length === index + 1) {
-            return (
-              <ListItemButton ref={lastItemRef} key={item.id} onClick={() => handleItemClick(item)}>
-                <ListItemText primary={item.title} secondary={item.state} />
-              </ListItemButton>
-            );
-          } else {
-            return (
-              <ListItemButton key={item.id} onClick={() => handleItemClick(item)}>
-                <ListItemText primary={item.title} secondary={item.state} />
-              </ListItemButton>
-            );
-          }
-        })}
+            if (items.length === index + 1) {
+              return (
+                <ListItemButton ref={lastItemRef} key={item.id} onClick={() => handleItemClick(item)}>
+                  <ListItemText primary={item.title} secondary={item.state} />
+                </ListItemButton>
+              );
+            } else {
+              return (
+                <ListItemButton key={item.id} onClick={() => handleItemClick(item)}>
+                  <ListItemText primary={item.title} secondary={item.state} />
+                </ListItemButton>
+              );
+            }
+          })
+        }
         {traktResults
           .filter(result => result.type === type)
           .map(result => (
