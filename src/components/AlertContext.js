@@ -9,11 +9,21 @@ export const useAlert = () => useContext(AlertContext);
 export const AlertProvider = ({ children }) => {
   const [alerts, setAlerts] = useState([]);
 
-  const addAlert = (message, severity = 'info') => {
+  const addAlert = (message, severity = 'info', customComponent = null, sticky = false) => {
+    const id = uuidv4();
     setAlerts((prevAlerts) => [
       ...prevAlerts,
-      { id: uuidv4(), message, severity }, // Use UUID for unique IDs
+      { id, message, severity, customComponent, sticky }, // Add sticky property to alert object
     ]);
+    return id; // Return the ID of the newly created alert
+  };
+
+  const updateAlert = (id, message, severity = 'info', customComponent = null, sticky = false) => {
+    setAlerts((prevAlerts) =>
+      prevAlerts.map((alert) =>
+        alert.id === id ? { ...alert, message, severity, customComponent, sticky } : alert
+      )
+    );
   };
 
   const removeAlert = (id) => {
@@ -21,20 +31,24 @@ export const AlertProvider = ({ children }) => {
   };
 
   return (
-    <AlertContext.Provider value={{ addAlert }}>
+    <AlertContext.Provider value={{ addAlert, updateAlert }}>
       {children}
       {alerts.map((alert, index) => (
         <Snackbar
           key={alert.id}
           open={true}
-          autoHideDuration={3000}
+          autoHideDuration={alert.sticky ? null : 3000} // Use sticky property to control autoHideDuration
           onClose={() => removeAlert(alert.id)}
           anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
           style={{ bottom: `${index * 60}px` }} // Adjust the offset based on the index
         >
-          <Alert onClose={() => removeAlert(alert.id)} severity={alert.severity}>
-            {alert.message}
-          </Alert>
+          {alert.customComponent ? (
+            React.cloneElement(alert.customComponent, { onClose: () => removeAlert(alert.id) })
+          ) : (
+            <Alert onClose={() => removeAlert(alert.id)} severity={alert.severity}>
+              {alert.message}
+            </Alert>
+          )}
         </Snackbar>
       ))}
     </AlertContext.Provider>

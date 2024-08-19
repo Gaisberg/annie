@@ -3,19 +3,19 @@ import { useParams } from 'react-router-dom';
 import axios from 'axios';
 import { BackendContext } from '../App';
 import { useAlert } from '../components/AlertContext';
-import { Typography, Table, Grid, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, IconButton, Accordion, AccordionSummary, AccordionDetails, Box } from '@mui/material';
+import { Typography, Table, Grid, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, IconButton, Accordion, AccordionSummary, AccordionDetails, Box, Button } from '@mui/material';
 import LoadingButton from '@mui/lab/LoadingButton';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { useNavigate } from 'react-router-dom';
 import ScrapeResultsModal from '../components/ScrapeResults';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import { useWebSocket } from '../components/WebSocketContext';
-import {FastAverageColor} from 'fast-average-color';
+import { WebSocketContext } from '../components/WebSocketContext';
+
 
 const LibraryPage = () => {
   const { imdb_id } = useParams();
   const { backendUrl } = useContext(BackendContext);
-  const { items } = useWebSocket();
+  const { items } = useContext(WebSocketContext);
   const prevItemsRef = useRef(items);
   const [item, setItem] = useState(null);
   const [resetTrigger, setResetTrigger] = useState(false);
@@ -26,13 +26,10 @@ const LibraryPage = () => {
   const [loading, setLoading] = useState({ reset: false, scrape: false, retry: false });
   const [currentItem, setCurrentItem] = useState(null);
   const navigate = useNavigate();
-  const [textColor, setTextColor] = useState('#000'); // Default text color
-
 
   useEffect(() => {
     axios.get(`${backendUrl}/items?search=${imdb_id}&extended=true`)
       .then(response => {
-        console.log(response.data.items[0]);
         setItem(response.data.items[0]);
       })
       .catch(error => {
@@ -53,21 +50,6 @@ const LibraryPage = () => {
 
   const backgroundUrl = `https://images.metahub.space/background/large/${imdb_id}/img`;
 
-  // useEffect(() => {
-  //   if (backgroundUrl) {
-  //     const fac = new FastAverageColor();
-  //     fac.getColorAsync(backgroundUrl)
-  //       .then(color => {
-  //         const [r, g, b] = color.value;
-  //         const brightness = (r * 299 + g * 587 + b * 114) / 1000;
-  //         const textColor = brightness > 125 ? '#000' : '#fff'; // Choose black or white text based on brightness
-  //         setTextColor(textColor);
-  //       })
-  //       .catch(e => {
-  //       });
-  //   }
-  // }, [backgroundUrl]);
-
   if (!item) return null;
 
 
@@ -87,17 +69,15 @@ const LibraryPage = () => {
       });
   };
 
-  const handleScrape = (item) => {
-    setLoading(prev => ({ ...prev, scrape: true }));
-    setCurrentItem(item);
-    axios.get(`${backendUrl}/items/cached?ids=${item.id}`)
+  const handleDelete = (item) => {
+    axios.delete(`${backendUrl}/items/remove?ids=${item.id}`)
       .then(response => {
-        setScrapeResults(response.data.data); // Assuming the response contains a 'results' array
-        setIsModalOpen(true);
+        addAlert(`${item.title} deleted successfully`, 'success');
+        navigate(`/${item.type}s`);
       })
       .catch(error => {
         console.error(error);
-        addAlert('Failed to initiate scrape', 'error');
+        addAlert(`Failed to delete ${item.title}`, 'error');
       })
       .finally(() => {
         setLoading(prev => ({ ...prev, scrape: false }));
@@ -136,10 +116,13 @@ const LibraryPage = () => {
     return (
       <div>
         <Box sx={{ display: 'inline-block', marginRight: 2 }}>
-          <LoadingButton color="error" variant="outlined" loading={loading.reset} onClick={() => handleReset(item)}>Reset</LoadingButton>
+          <LoadingButton variant="outlined" loading={loading.reset} onClick={() => handleReset(item)}>Reset</LoadingButton>
         </Box>
         <Box sx={{ display: 'inline-block', marginRight: 2 }}>
           <LoadingButton variant="outlined" loading={loading.retry} onClick={() => handleRetry(item)}>Retry</LoadingButton>
+        </Box>
+        <Box sx={{ display: 'inline-block', marginRight: 2 }}>
+          <LoadingButton variant="outlined" loading={loading.delete} onClick={() => handleDelete(item)}>Delete</LoadingButton>
         </Box>
       </div>
     );
@@ -148,14 +131,20 @@ const LibraryPage = () => {
   return (
     <div className="custom-scrollbar">
 
-      <Box sx={{ width: '100vw', height: '100vh', overflow: 'auto' }}>
+      <Box
+              sx={{
+                width: '100vw',
+                height: '100vh',
+                overflow: 'auto',
+                backgroundImage: `linear-gradient(to bottom, rgba(0, 0, 0, .5), rgba(0, 0, 0, 1) 60%), url(${backgroundUrl})`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+              }}
+        >
         {/* Header Section */}
         <Box
           sx={{
             width: '100%',
-            backgroundImage: `url(${backgroundUrl})`,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
             display: 'flex',
             flexDirection: 'column',
             justifyContent: 'flex-start',
@@ -178,31 +167,31 @@ const LibraryPage = () => {
               zIndex: 2, // Ensure content is above the overlay
             }}
           >
-          <IconButton
-            onClick={() => navigate(`/${item.type}s`)}
-            sx={{
-              zIndex: 3, // Ensure the button is above other elements
-            }}
-          >
-            <ArrowBackIcon />
-          </IconButton>
+            <IconButton
+              onClick={() => navigate(`/${item.type}s`)}
+              sx={{
+                zIndex: 3, // Ensure the button is above other elements
+              }}
+            >
+              <ArrowBackIcon />
+            </IconButton>
 
-            <Typography variant="h5" component="div" color={textColor}>
+            <Typography variant="h5" component="div">
               {item.title}
             </Typography>
-            <Typography variant="body2" color={textColor}>
+            <Typography variant="body2" >
               ID: {item.id}
             </Typography>
-            <Typography variant="body2" color={textColor}>
+            <Typography variant="body2">
               File: {item.file}
             </Typography>
-            <Typography variant="body2" color={textColor}>
+            <Typography variant="body2">
               Requested At: {item.requested_at}
             </Typography>
-            <Box sx={{ display: 'flex', gap: 2, marginTop: 2 }}>
-              <LoadingButton color="error" variant="outlined" loading={loading.reset} onClick={() => handleReset(item)}>Reset</LoadingButton>
-              <LoadingButton variant="outlined" loading={loading.retry} onClick={() => handleRetry(item)}>Retry</LoadingButton>
-            </Box>
+            {<Box sx={{ display: 'flex', gap: 2, marginTop: 2 }}>
+              <ButtonRow item={item} />
+
+            </Box>}
           </Box>
         </Box>
         <Box sx={{ padding: 2 }}>

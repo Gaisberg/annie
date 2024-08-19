@@ -6,6 +6,7 @@ import { BrowserRouter as Router } from 'react-router-dom';
 import { AlertProvider } from './components/AlertContext';
 import Content from './Content';
 import { WebSocketProvider } from './components/WebSocketContext';
+import EventAlert  from './components/EventAlerts';
 
 // Create a context
 export const BackendContext = createContext();
@@ -16,7 +17,7 @@ function App() {
     return localStorage.getItem('backendUrl') || '';
   });
 
-  const [backendStatus, setBackendStatus] = useState(false);
+  const [backendStatus, setBackendStatus] = useState('stopped'); // Initial state
 
 
   useEffect(() => {
@@ -28,6 +29,7 @@ function App() {
       <BackendContext.Provider value={{ backendUrl, setBackendUrl, backendStatus, setBackendStatus }}>
         <AlertProvider>
           <WebSocketProvider>
+            <EventAlert />
             <Router>
               <div className="parent-container">
                 <div className="custom-scrollbar" style={{ overflow: 'hidden' }}>

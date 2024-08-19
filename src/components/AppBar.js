@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { useContext, useState } from 'react';
+import { useContext, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
@@ -21,9 +21,11 @@ import { isValidUrl } from '../utils/isValidUrl';
 import Brightness4Icon from '@mui/icons-material/Brightness4';
 import Brightness7Icon from '@mui/icons-material/Brightness7';
 import '../styles.css'; // Import the styles.css file
+import PauseCircleFilledRoundedIcon from '@mui/icons-material/PauseCircleFilledRounded';
+import StopCircleRoundedIcon from '@mui/icons-material/StopCircleRounded';
+import { debounce } from 'lodash'; // Import debounce from lodash
 
 
-const pages = ['Movies', 'Shows', 'Settings', 'Debug'];
 
 function ResponsiveAppBar() {
   const { backendUrl, setBackendUrl, backendStatus } = useContext(BackendContext);
@@ -31,12 +33,19 @@ function ResponsiveAppBar() {
   const [urlInput, setUrlInput] = useState(backendUrl);
   const [anchorElNav, setAnchorElNav] = useState(null);
 
-  const handleUrlChange = (e) => {
-    const url = e.target.value;
-    setUrlInput(url);
-    if (isValidUrl(url)) {
+  const pages = backendStatus === 'running' ? ['Movies', 'Shows', 'Settings', 'Debug'] : ['Settings', 'Debug'];
+
+  const debouncedSetBackendUrl = useCallback(
+    debounce((url) => {
       setBackendUrl(url);
-    }
+    }, 300), // Adjust the debounce delay as needed
+    []
+  );
+
+  const handleUrlChange = (e) => {
+      const url = e.target.value;
+      setUrlInput(url);
+      debouncedSetBackendUrl(url);
   };
 
   const handleOpenNavMenu = (event) => {
@@ -148,19 +157,26 @@ function ResponsiveAppBar() {
                 placeholder="http://localhost:8000"
                 value={urlInput}
                 onChange={handleUrlChange}
-                error={backendStatus ? false : true}
                 InputProps={{
                     endAdornment: (
                         <InputAdornment position="end">
-                            <CheckBoxRoundedIcon color={backendStatus ? "success" : "error"} />
+                          {backendStatus === 'running' &&
+                            <CheckBoxRoundedIcon color="success" />
+                          }
+                          {backendStatus === 'paused' &&
+                            <PauseCircleFilledRoundedIcon color="warning" />
+                          }
+                          {backendStatus === 'stopped' &&
+                            <StopCircleRoundedIcon color="error" />
+                          }
                         </InputAdornment>
                     ),
                 }}
             />
           </Box>
-          <IconButton sx={{ ml: 1 }} onClick={toggleTheme} color="inherit">
+          {/* <IconButton sx={{ ml: 1 }} onClick={toggleTheme} color="inherit">
             {isDarkTheme ? <Brightness7Icon /> : <Brightness4Icon />}
-          </IconButton>
+          </IconButton> */}
         </Toolbar>
       </Container>
     </AppBar>

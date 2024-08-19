@@ -1,12 +1,11 @@
 import React, { useState, useEffect, useContext, useRef } from 'react';
-import { TextField, List, ListItemText, IconButton, InputAdornment, CircularProgress } from '@mui/material';
-
-import { useWebSocket } from '../components/WebSocketContext';
+import { TextField } from '@mui/material';
 import { BackendContext } from '../App';
+import { WebSocketContext } from '../components/WebSocketContext';
 
 const DebugPage = () => {
-  const { backendUrl} = useContext(BackendContext);
-  const { logMessages } = useWebSocket();
+  const { logMessages } = useContext(WebSocketContext);
+  const { backendUrl } = useContext(BackendContext);
   const [logs, setLogs] = useState([]);
   const [searchKeyword, setSearchKeyword] = useState('');
   const logContainerRef = useRef(null);

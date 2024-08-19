@@ -14,7 +14,7 @@ const Content = () => {
   return (
     <div className="parent-container">
       <AppBar position="static" />
-      {backendStatus ? (
+      {backendStatus === "running"  && (
         <Routes>
           <Route path="/" element={<MediaList type="movie" />} />
           <Route path="/movies" element={<MediaList type="movie" />} />
@@ -23,15 +23,17 @@ const Content = () => {
           <Route path="/debug" element={<DebugPage />} />
           <Route path="/settings" element={<SettingsPage />} />
         </Routes>
-      ) : (
-        <Box
-        display="flex"
-        justifyContent="center"
-        alignItems="center"
-        height="100vh">
-          <Typography variant="h6" color="textSecondary">
-            Backend is not connected
-          </Typography>
+      )}
+      {backendStatus === "paused" && (
+        <Routes>
+          <Route path="/" element={<SettingsPage />} />
+          <Route path="/settings" element={<SettingsPage />} />
+          <Route path="/debug" element={<DebugPage />} />
+        </Routes>
+      )}
+      {backendStatus === "stopped" && (
+        <Box display="flex" justifyContent="center" alignItems="center" height="100vh">
+          <Typography variant="h4">Cant connect to backend</Typography>
         </Box>
       )}
     </div>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useCallback } from 'react';
 import { TextField, Button, Box, Checkbox, FormControlLabel, Typography, Accordion, AccordionSummary, AccordionDetails, IconButton, CircularProgress } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import AddIcon from '@mui/icons-material/Add';
@@ -6,6 +6,7 @@ import RemoveIcon from '@mui/icons-material/Remove';
 import { BackendContext } from '../App';
 import axios from 'axios';
 import { useAlert } from '../components/AlertContext';
+import { debounce } from 'lodash';
 
 function SettingsPage() {
   const { backendUrl} = useContext(BackendContext);
@@ -25,7 +26,7 @@ function SettingsPage() {
           addAlert('Failed to fetch settings', 'error');
           setLoading(false);
         });
-  }, [backendUrl, addAlert]);
+  }, [backendUrl]);
 
   const handleInputChange = (keyPath, value) => {
     setSettings(prevSettings => {
