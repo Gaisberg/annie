@@ -30,5 +30,9 @@ COPY --from=builder /app/package.json ./package.json
 # Expose the port the app runs on
 EXPOSE 3000
 
+# Set environment variables
+ENV NODE_ENV production
+ENV NEXT_TELEMETRY_DISABLED 1
+
 # Run the app
 CMD ["npm", "start"]
