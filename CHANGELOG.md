@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.1](https://github.com/Gaisberg/annie/compare/v0.1.0...v0.1.1) (2024-10-04)
+
+
+### Bug Fixes
+
+* faulty dockerfile ([d508285](https://github.com/Gaisberg/annie/commit/d50828504690589d1be268899affff69fc6c9529))
+
 ## [0.1.0](https://github.com/Gaisberg/annie/compare/v0.0.6...v0.1.0) (2024-10-04)
 
 
