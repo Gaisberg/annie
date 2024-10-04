@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.2](https://github.com/Gaisberg/annie/compare/v0.1.1...v0.1.2) (2024-10-04)
+
+
+### Bug Fixes
+
+* docker build ([85938f1](https://github.com/Gaisberg/annie/commit/85938f17f5c343b83f02842044767ec82cce2039))
+
 ## [0.1.1](https://github.com/Gaisberg/annie/compare/v0.1.0...v0.1.1) (2024-10-04)
 
 
