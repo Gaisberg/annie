@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import axios from 'axios'
 import { Card, CardContent } from "@/components/ui/card"
@@ -9,7 +9,6 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { Badge } from "@/components/ui/badge"
 import { FilterSort } from './filter-sort'
 import { useStore } from '@/lib/store'
-
 
 interface TraktItem {
   type: 'movie' | 'show'
@@ -44,7 +43,7 @@ interface LibraryStatus {
   [key: string]: boolean;
 }
 
-export default function TraktSearchPage() {
+function SearchResults() {
   const searchParams = useSearchParams()
   const query = searchParams.get('query')
   const [results, setResults] = useState<TraktItem[]>([])
@@ -55,13 +54,13 @@ export default function TraktSearchPage() {
   const wsUrl = useStore((state) => state.wsUrl)
   const apiUrl = useMemo(() => wsUrl ? `http${wsUrl.slice(2)}` : '', [wsUrl])
   const router = useRouter();
-  
+
   useEffect(() => {
     const fetchTraktResults = async () => {
       setLoading(true)
       try {
         const response = await axios.get('https://api.trakt.tv/search/movie,show', {
-          params: { 
+          params: {
             query,
             extended: 'full'
           },
@@ -74,13 +73,11 @@ export default function TraktSearchPage() {
 
         setResults(response.data)
 
-        // Fetch library status for all results
-        const imdbIds = response.data.map((item: TraktItem) => 
+        const imdbIds = response.data.map((item: TraktItem) =>
           item.type === 'movie' ? item.movie?.ids.imdb : item.show?.ids.imdb
         ).filter(Boolean)
 
         const statusResponse = await axios.get(`${apiUrl}/items?imdb_ids=${imdbIds.join(',')}`)
-        console.log('statusResponse', statusResponse.data)
         setLibraryStatus(statusResponse.data)
       } catch (error) {
         console.error('Error fetching Trakt results or library status:', error)
@@ -100,7 +97,6 @@ export default function TraktSearchPage() {
 
     try {
       await axios.post(`${apiUrl}/items/add?imdb_ids=${mediaItem.ids.imdb}`)
-      // Update the library status for this item
       router.push(`/dashboard/${item.type}s`)
     } catch (error) {
       console.error('Error requesting item:', error)
@@ -194,5 +190,13 @@ export default function TraktSearchPage() {
         })}
       </div>
     </div>
+  )
+}
+
+export default function TraktSearchPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <SearchResults />
+    </Suspense>
   )
 }

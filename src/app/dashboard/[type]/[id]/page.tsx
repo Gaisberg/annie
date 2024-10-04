@@ -71,9 +71,9 @@ export default function ItemPage({ params }: { params: { type: string, id: strin
       const { data } = await axios.get(`${apiUrl}/items/${params.id}`);
       return data.item;
     },
-    onError: () => {
-      router.push(`/dashboard/${params.type}`)
-    },
+    // onError: () => {
+    //   router.push(`/dashboard/${params.type}`)
+    // },
   });
 
   useEffect(() => {
